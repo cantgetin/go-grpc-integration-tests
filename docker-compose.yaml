@@ -1,0 +1,29 @@
+version: "3.8"
+
+networks:
+  sample-network:
+    external: false
+
+services:
+
+  db:
+    image: "postgres:15.2-alpine"
+    networks:
+      - "sample-network"
+    ports:
+      - "5468:5432"
+    environment:
+      POSTGRES_USER: db
+      POSTGRES_PASSWORD: db
+      POSTGRES_DB: db
+    restart: "on-failure"
+
+  adminer:
+    image: "adminer"
+    networks:
+      - "sample-network"
+    restart: "on-failure"
+    depends_on:
+      - "db"
+    ports:
+      - "8080:8080"

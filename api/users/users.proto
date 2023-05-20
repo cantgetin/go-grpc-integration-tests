@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package users;
+option go_package = "pkg/users;users";
+
+service UserService {
+  rpc GetUser (GetUserRequest) returns (GetUserResponse) {}
+  rpc ListUsers (ListUsersRequest) returns (ListUsersResponse) {}
+}
+
+message GetUserRequest {
+  int32 id = 1;
+}
+
+message GetUserResponse {
+  User user = 1;
+}
+
+message User {
+  int32 id = 1;
+  string name = 2;
+  string username = 3;
+  string password_hash = 4;
+}
+
+message ListUsersRequest {}
+
+message ListUsersResponse {
+  repeated User users = 1;
+}

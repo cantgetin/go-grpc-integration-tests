@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package books;
+option go_package = "pkg/books;books";
+
+service BookService {
+  rpc GetBook (GetBookRequest) returns (GetBookResponse) {}
+  rpc ListBooks (ListBooksRequest) returns (ListBooksResponse) {}
+}
+
+message GetBookRequest {
+  int32 id = 1;
+}
+
+message GetBookResponse {
+  Book book = 1;
+}
+
+message Book {
+  int32 id = 1;
+  string name = 2;
+  string author = 3;
+}
+
+message ListBooksRequest {}
+
+message ListBooksResponse {
+  repeated Book books = 1;
+}
