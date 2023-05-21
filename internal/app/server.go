@@ -2,7 +2,6 @@ package app
 
 import (
 	"context"
-	"fmt"
 	"go-integration-tests/internal/app/booksserviceapi"
 	userserviceapi "go-integration-tests/internal/app/usersserviceapi"
 	"go-integration-tests/internal/bootstrap"
@@ -20,11 +19,11 @@ import (
 	"time"
 )
 
-func Run(cfg *config.Config) error {
+func Run(baseCtx context.Context, cfg *config.Config) error {
 
 	// grpc server
 	s := grpc.NewServer()
-	_, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(baseCtx)
 
 	// db
 	db, err := bootstrap.InitDB(cfg)
@@ -49,27 +48,30 @@ func Run(cfg *config.Config) error {
 	users.RegisterUserServiceServer(s, us)
 
 	go func() {
+		log.Println("grpc server started")
 		if err := s.Serve(l); err != nil {
 			log.Fatalf("failed to service grpc server, %v", err)
 		}
-		log.Println("Server started")
 	}()
 
-	gracefulShutDown(s, cancel)
-
+	gracefulShutDown(ctx, s, cancel)
 	return nil
 }
 
-func gracefulShutDown(s *grpc.Server, cancel context.CancelFunc) {
+func gracefulShutDown(ctx context.Context, s *grpc.Server, cancel context.CancelFunc) {
 	const waitTime = 5 * time.Second
 
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
 	defer signal.Stop(ch)
 
-	sig := <-ch
-	errorMessage := fmt.Sprintf("Received shutdown signal %v", sig)
-	log.Println(errorMessage)
+	select {
+	case sig := <-ch:
+		log.Printf("os signal received %s", sig.String())
+	case <-ctx.Done():
+		log.Printf("ctx done %s", ctx.Err().Error())
+	}
+
 	s.GracefulStop()
 	cancel()
 	time.Sleep(waitTime)

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"github.com/caarlos0/env"
 	"go-integration-tests/internal/app"
 	"go-integration-tests/internal/config"
@@ -14,7 +15,7 @@ func main() {
 		log.Fatalf("failed to retrieve env variables, %v", err)
 	}
 
-	if err := app.Run(cfg); err != nil {
+	if err := app.Run(context.Background(), cfg); err != nil {
 		log.Fatalf("error running grpc server, %v", err)
 	}
 }
